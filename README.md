@@ -1,18 +1,25 @@
-# Meshtastic Firmware
+# Meshtastic Firmware Unleashed
 
-![GitHub release downloads](https://img.shields.io/github/downloads/meshtastic/firmware/total)
-[![CI](https://img.shields.io/github/actions/workflow/status/meshtastic/firmware/main_matrix.yml?branch=master&label=actions&logo=github&color=yellow)](https://github.com/meshtastic/firmware/actions/workflows/ci.yml)
-[![CLA assistant](https://cla-assistant.io/readme/badge/meshtastic/firmware)](https://cla-assistant.io/meshtastic/firmware)
-[![Fiscal Contributors](https://opencollective.com/meshtastic/tiers/badge.svg?label=Fiscal%20Contributors&color=deeppink)](https://opencollective.com/meshtastic/)
-[![Vercel](https://img.shields.io/static/v1?label=Powered%20by&message=Vercel&style=flat&logo=vercel&color=000000)](https://vercel.com?utm_source=meshtastic&utm_campaign=oss)
+## Introduction
+Meshtastic Firmware Unleashed is a fork of the original Meshtastic Firmware project designed to extend the capabilities of the original firmware by removing various limitations, all while maintaining complete compatibility with the original firmware. This project aims to enhance the user experience and offer more flexibility for users who wish to utilize advanced features not available in the original version.
 
-## Overview
+## Features
+- **Compatibility with Original Firmware:** Ensures that devices running Meshtastic Firmware Unleashed can communicate seamlessly with devices running the original Meshtastic Firmware.
+- **Removed Limitations:** Various restrictions present in the original firmware have been lifted, providing users with enhanced functionality and a more versatile experience.
 
-This repository contains the device firmware for the Meshtastic project.
+## Supported Hardware
+Currently, the Meshtastic Firmware Unleashed project supports the following hardware platforms:
+- Heltec WiFi LoRa 32 (V3)
+- RAK4631 LoRa Module
 
-- **[Building Instructions](https://meshtastic.org/docs/development/firmware/build)**
-- **[Flashing Instructions](https://meshtastic.org/docs/getting-started/flashing-firmware/)**
+## Getting Started
+To get started with Meshtastic Firmware Unleashed, follow these steps:
+1. Ensure your device is one of the supported hardware models.
+2. Download the latest firmware release from the [Releases](https://github.com/upchui/firmware-Meshtastic-Unleashed/releases) page.
 
-## Stats
+## Contributing
+We welcome contributions from the community! If you're interested in helping improve Meshtastic Firmware Unleashed. Whether you're looking to report a bug, contribute code, or suggest new features, we'd love to hear from you.
 
-![Alt](https://repobeats.axiom.co/api/embed/a92f097d9197ae853e780ec53d7d126e545629ab.svg "Repobeats analytics image")
+## Acknowledgements
+This project is a fork of the original [Meshtastic Firmware](https://github.com/meshtastic/firmware) project. We are grateful to the original authors and contributors for their groundbreaking work which serves as the foundation for this extension.
+
