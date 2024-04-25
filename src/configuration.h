@@ -75,6 +75,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 // -----------------------------------------------------------------------------
+// Regulatory overrides for producing regional builds
+// -----------------------------------------------------------------------------
+
+// Define if region should override user saved region
+// #define LORA_REGIONCODE meshtastic_Config_LoRaConfig_RegionCode_SG_923
+
+// -----------------------------------------------------------------------------
 // Feature toggles
 // -----------------------------------------------------------------------------
 
@@ -128,6 +135,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MPU6050_ADDR 0x68
 #define LIS3DH_ADR 0x18
 #define BMA423_ADDR 0x19
+#define LSM6DS3_ADDR 0x6A
 
 // -----------------------------------------------------------------------------
 // LED
@@ -137,8 +145,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // -----------------------------------------------------------------------------
 // Security
 // -----------------------------------------------------------------------------
-
 #define ATECC608B_ADDR 0x35
+
+// -----------------------------------------------------------------------------
+// IO Expander
+// -----------------------------------------------------------------------------
+#define TCA9555_ADDR 0x26
 
 // -----------------------------------------------------------------------------
 // GPS
@@ -253,33 +265,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MESHTASTIC_EXCLUDE_WAYPOINT 1
 #define MESHTASTIC_EXCLUDE_INPUTBROKER 1
 #define MESHTASTIC_EXCLUDE_SERIAL 1
-#endif
-
-// // Turn off wifi even if HW supports wifi (webserver relies on wifi and is also disabled)
-#ifdef MESHTASTIC_EXCLUDE_WIFI
-#define MESHTASTIC_EXCLUDE_WEBSERVER 1
-#undef HAS_WIFI
-#define HAS_WIFI 0
-#endif
-
-// // Turn off Bluetooth
-#ifdef MESHTASTIC_EXCLUDE_BLUETOOTH
-#undef HAS_BLUETOOTH
-#define HAS_BLUETOOTH 0
-#endif
-
-// // Turn off GPS
-#ifdef MESHTASTIC_EXCLUDE_GPS
-#undef HAS_GPS
-#define HAS_GPS 0
-#undef MESHTASTIC_EXCLUDE_RANGETEST
-#define MESHTASTIC_EXCLUDE_RANGETEST 1
-#endif
-
-// Turn off Screen
-#ifdef MESHTASTIC_EXCLUDE_SCREEN
-#undef HAS_SCREEN
-#define HAS_SCREEN 0
 #endif
 
 // // Turn off wifi even if HW supports wifi (webserver relies on wifi and is also disabled)

@@ -548,7 +548,10 @@ void MQTT::perhapsReportToMap()
     } else {
         if (map_position_precision == 0 || (localPosition.latitude_i == 0 && localPosition.longitude_i == 0)) {
             last_report_to_map = millis();
-            LOG_WARN("MQTT Map reporting is enabled, but precision is 0 or no position available.\n");
+            if (map_position_precision == 0)
+                LOG_WARN("MQTT Map reporting is enabled, but precision is 0\n");
+            if (localPosition.latitude_i == 0 && localPosition.longitude_i == 0)
+                LOG_WARN("MQTT Map reporting is enabled, but no position available.\n");
             return;
         }
 
@@ -656,6 +659,7 @@ std::string MQTT::meshPacketToJson(meshtastic_MeshPacket *mp)
                     msgPayload["voltage"] = new JSONValue(decoded->variant.device_metrics.voltage);
                     msgPayload["channel_utilization"] = new JSONValue(decoded->variant.device_metrics.channel_utilization);
                     msgPayload["air_util_tx"] = new JSONValue(decoded->variant.device_metrics.air_util_tx);
+                    msgPayload["uptime_seconds"] = new JSONValue((uint)decoded->variant.device_metrics.uptime_seconds);
                 } else if (decoded->which_variant == meshtastic_Telemetry_environment_metrics_tag) {
                     msgPayload["temperature"] = new JSONValue(decoded->variant.environment_metrics.temperature);
                     msgPayload["relative_humidity"] = new JSONValue(decoded->variant.environment_metrics.relative_humidity);

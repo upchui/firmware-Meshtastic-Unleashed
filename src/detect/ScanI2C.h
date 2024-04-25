@@ -39,9 +39,9 @@ class ScanI2C
         LIS3DH,
         BMA423,
         BQ24295,
-#ifdef HAS_NCP5623
+        LSM6DS3,
+        TCA9555,
         NCP5623,
-#endif
     } DeviceType;
 
     // typedef uint8_t DeviceAddress;

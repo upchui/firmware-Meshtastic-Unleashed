@@ -146,6 +146,11 @@ typedef enum _meshtastic_HardwareModel {
     /* Teledatics TD-LORAC NRF52840 based M.2 LoRA module
  Compatible with the TD-WRLS development board */
     meshtastic_HardwareModel_TD_LORAC = 60,
+    /* CDEBYTE EoRa-S3 board using their own MM modules, clone of LILYGO T3S3 */
+    meshtastic_HardwareModel_CDEBYTE_EORA_S3 = 61,
+    /* TWC_MESH_V4 
+ Adafruit NRF52840 feather express with SX1262, SSD1306 OLED and NEO6M GPS */
+    meshtastic_HardwareModel_TWC_MESH_V4 = 62,
     /* ------------------------------------------------------------------------------------------------------------------------------------------
  Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
  ------------------------------------------------------------------------------------------------------------------------------------------ */
@@ -1384,7 +1389,7 @@ extern const pb_msgdesc_t meshtastic_NodeRemoteHardwarePin_msg;
 #define meshtastic_MyNodeInfo_size               18
 #define meshtastic_NeighborInfo_size             258
 #define meshtastic_Neighbor_size                 22
-#define meshtastic_NodeInfo_size                 277
+#define meshtastic_NodeInfo_size                 283
 #define meshtastic_NodeRemoteHardwarePin_size    29
 #define meshtastic_Position_size                 144
 #define meshtastic_QueueStatus_size              23
