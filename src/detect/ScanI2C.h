@@ -29,6 +29,7 @@ class ScanI2C
         INA3221,
         MCP9808,
         SHT31,
+        SHT4X,
         SHTC3,
         LPS22HB,
         QMC6310,
@@ -41,7 +42,15 @@ class ScanI2C
         BQ24295,
         LSM6DS3,
         TCA9555,
+        VEML7700,
+        RCWL9620,
         NCP5623,
+        TSL2591,
+        OPT3001,
+        MLX90632,
+        AHT10,
+        BMX160,
+        DFROBOT_LARK
     } DeviceType;
 
     // typedef uint8_t DeviceAddress;

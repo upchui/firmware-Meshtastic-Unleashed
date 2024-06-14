@@ -69,6 +69,8 @@ NRF52Bluetooth *nrf52Bluetooth;
 #endif
 
 #include "LLCC68Interface.h"
+#include "LR1110Interface.h"
+#include "LR1120Interface.h"
 #include "RF95Interface.h"
 #include "SX1262Interface.h"
 #include "SX1268Interface.h"
@@ -98,9 +100,10 @@ NRF52Bluetooth *nrf52Bluetooth;
 
 #include "PowerFSMThread.h"
 
-#if !defined(ARCH_PORTDUINO) && !defined(ARCH_STM32WL)
+#if !defined(ARCH_PORTDUINO) && !defined(ARCH_STM32WL) && !MESHTASTIC_EXCLUDE_ENVIRONMENTAL_SENSOR
 #include "AccelerometerThread.h"
 #include "AmbientLightingThread.h"
+AccelerometerThread *accelerometerThread;
 #endif
 
 #ifdef HAS_I2S
@@ -203,7 +206,6 @@ uint32_t timeLastPowered = 0;
 
 static Periodic *ledPeriodic;
 static OSThread *powerFSMthread;
-static OSThread *accelerometerThread;
 static OSThread *ambientLightingThread;
 SPISettings spiSettings(4000000, MSBFIRST, SPI_MODE0);
 
@@ -349,7 +351,7 @@ void setup()
     Wire.begin(I2C_SDA, I2C_SCL);
 #elif defined(ARCH_PORTDUINO)
     if (settingsStrings[i2cdev] != "") {
-        LOG_INFO("Using %s as I2C device.\n", settingsStrings[i2cdev]);
+        LOG_INFO("Using %s as I2C device.\n", settingsStrings[i2cdev].c_str());
         Wire.begin(settingsStrings[i2cdev].c_str());
     } else {
         LOG_INFO("No I2C device configured, skipping.\n");
@@ -367,17 +369,10 @@ void setup()
     delay(1);
 #endif
 
-#ifdef RAK4630
-#ifdef PIN_3V3_EN
-    // We need to enable 3.3V periphery in order to scan it
-    pinMode(PIN_3V3_EN, OUTPUT);
-    digitalWrite(PIN_3V3_EN, HIGH);
-#endif
 #ifdef AQ_SET_PIN
     // RAK-12039 set pin for Air quality sensor
     pinMode(AQ_SET_PIN, OUTPUT);
     digitalWrite(AQ_SET_PIN, HIGH);
-#endif
 #endif
 
 #ifdef T_DECK
@@ -545,15 +540,19 @@ void setup()
     SCANNER_TO_SENSORS_MAP(ScanI2C::DeviceType::QMI8658, meshtastic_TelemetrySensorType_QMI8658)
     SCANNER_TO_SENSORS_MAP(ScanI2C::DeviceType::QMC5883L, meshtastic_TelemetrySensorType_QMC5883L)
     SCANNER_TO_SENSORS_MAP(ScanI2C::DeviceType::PMSA0031, meshtastic_TelemetrySensorType_PMSA003I)
+    SCANNER_TO_SENSORS_MAP(ScanI2C::DeviceType::RCWL9620, meshtastic_TelemetrySensorType_RCWL9620)
+    SCANNER_TO_SENSORS_MAP(ScanI2C::DeviceType::VEML7700, meshtastic_TelemetrySensorType_VEML7700)
+    SCANNER_TO_SENSORS_MAP(ScanI2C::DeviceType::TSL2591, meshtastic_TelemetrySensorType_TSL25911FN)
+    SCANNER_TO_SENSORS_MAP(ScanI2C::DeviceType::OPT3001, meshtastic_TelemetrySensorType_OPT3001)
+    SCANNER_TO_SENSORS_MAP(ScanI2C::DeviceType::MLX90632, meshtastic_TelemetrySensorType_MLX90632)
+    SCANNER_TO_SENSORS_MAP(ScanI2C::DeviceType::SHT4X, meshtastic_TelemetrySensorType_SHT4X)
+    SCANNER_TO_SENSORS_MAP(ScanI2C::DeviceType::AHT10, meshtastic_TelemetrySensorType_AHT10)
+    SCANNER_TO_SENSORS_MAP(ScanI2C::DeviceType::DFROBOT_LARK, meshtastic_TelemetrySensorType_DFROBOT_LARK)
 
     i2cScanner.reset();
 
 #ifdef HAS_SDCARD
     setupSDCard();
-#endif
-
-#ifdef RAK4630
-    // scanEInkDevice();
 #endif
 
     // LED init
@@ -611,7 +610,7 @@ void setup()
     screen_model = meshtastic_Config_DisplayConfig_OledType_OLED_SH1107; // keep dimension of 128x64
 #endif
 
-#if !defined(ARCH_PORTDUINO) && !defined(ARCH_STM32WL)
+#if !defined(ARCH_PORTDUINO) && !defined(ARCH_STM32WL) && !MESHTASTIC_EXCLUDE_ENVIRONMENTAL_SENSOR
     if (acc_info.type != ScanI2C::DeviceType::NONE) {
         config.display.wake_on_tap_or_motion = true;
         moduleConfig.external_notification.enabled = true;
@@ -700,6 +699,12 @@ void setup()
     // Now that the mesh service is created, create any modules
     setupModules();
 
+#ifdef LED_PIN
+    // Turn LED off after boot, if heartbeat by config
+    if (config.device.led_heartbeat_disabled)
+        digitalWrite(LED_PIN, LOW ^ LED_INVERTED);
+#endif
+
 // Do this after service.init (because that clears error_code)
 #ifdef HAS_PMU
     if (!pmu_found)
@@ -736,7 +741,8 @@ void setup()
     if (settingsMap[use_sx1262]) {
         if (!rIf) {
             LOG_DEBUG("Attempting to activate sx1262 radio on SPI port %s\n", settingsStrings[spidev].c_str());
-            LockingArduinoHal *RadioLibHAL = new LockingArduinoHal(SPI, spiSettings);
+            LockingArduinoHal *RadioLibHAL =
+                new LockingArduinoHal(SPI, spiSettings, (settingsMap[ch341Quirk] ? settingsMap[busy] : RADIOLIB_NC));
             rIf = new SX1262Interface((LockingArduinoHal *)RadioLibHAL, settingsMap[cs], settingsMap[irq], settingsMap[reset],
                                       settingsMap[busy]);
             if (!rIf->init()) {
@@ -750,7 +756,8 @@ void setup()
     } else if (settingsMap[use_rf95]) {
         if (!rIf) {
             LOG_DEBUG("Attempting to activate rf95 radio on SPI port %s\n", settingsStrings[spidev].c_str());
-            LockingArduinoHal *RadioLibHAL = new LockingArduinoHal(SPI, spiSettings);
+            LockingArduinoHal *RadioLibHAL =
+                new LockingArduinoHal(SPI, spiSettings, (settingsMap[ch341Quirk] ? settingsMap[busy] : RADIOLIB_NC));
             rIf = new RF95Interface((LockingArduinoHal *)RadioLibHAL, settingsMap[cs], settingsMap[irq], settingsMap[reset],
                                     settingsMap[busy]);
             if (!rIf->init()) {
@@ -881,6 +888,32 @@ void setup()
         } else {
             LOG_INFO("LLCC68 Radio init succeeded, using LLCC68 radio\n");
             radioType = LLCC68_RADIO;
+        }
+    }
+#endif
+
+#if defined(USE_LR1110)
+    if (!rIf) {
+        rIf = new LR1110Interface(RadioLibHAL, LR1110_SPI_NSS_PIN, LR1110_IRQ_PIN, LR1110_NRESER_PIN, LR1110_BUSY_PIN);
+        if (!rIf->init()) {
+            LOG_WARN("Failed to find LR1110 radio\n");
+            delete rIf;
+            rIf = NULL;
+        } else {
+            LOG_INFO("LR1110 Radio init succeeded, using LR1110 radio\n");
+        }
+    }
+#endif
+
+#if defined(USE_LR1120)
+    if (!rIf) {
+        rIf = new LR1120Interface(RadioLibHAL, LR1120_SPI_NSS_PIN, LR1120_IRQ_PIN, LR1120_NRESER_PIN, LR1120_BUSY_PIN);
+        if (!rIf->init()) {
+            LOG_WARN("Failed to find LR1120 radio\n");
+            delete rIf;
+            rIf = NULL;
+        } else {
+            LOG_INFO("LR1120 Radio init succeeded, using LR1120 radio\n");
         }
     }
 #endif
